@@ -1,3 +1,14 @@
+<div *ngIf="perfil; else noProfile" class="profile-container">
+  <img
+    [src]="perfil.avatar_url"
+    alt="Foto de perfil de {{ perfil.name }}"
+    class="profile-image"
+  />
+  <p class="profile-name">{{ perfil.name }}</p>
+</div>
 
-<img [src]="dado.avatar_url">
-<p>Nome: {{ dado.name }}</p>
+<ng-template #noProfile>
+  <p class="no-profile-message">
+    Perfil não encontrado ou erro ao carregar o perfil.
+  </p>
+</ng-template>

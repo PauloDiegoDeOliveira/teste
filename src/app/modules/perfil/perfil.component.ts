@@ -1,38 +1,39 @@
-import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Subscription } from 'rxjs';
-import { IPerfil } from '../../features/interfaces/IPerfil';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { IPerfil } from '../../models/interfaces/perfil/IPerfil';
+import { PerfilService } from '../../services/perfil/perfil.service';
 
 @Component({
   selector: 'app-perfil',
   standalone: true,
   templateUrl: './perfil.component.html',
-  styleUrl: './perfil.component.scss',
+  styleUrls: ['./perfil.component.scss'],
+  imports: [CommonModule],
 })
-export class PerfilComponent implements OnInit {
-  public imagem: string | any;
-  public incricoes: Subscription = new Subscription();
-  public url_api = 'https://api.github.com/users/paulodiegodeOliveira';
-  public dado: IPerfil = { } as IPerfil;
+export class PerfilComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  public perfil: IPerfil = {} as IPerfil;
 
-  constructor(
-    private http: HttpClient
-  ) {}
+  constructor(private perfilService: PerfilService) {}
 
   ngOnInit(): void {
-    this.obterImagem();
+    this.obterPerfil();
   }
 
-  obterImagem(): void {
-    this.incricoes = this.http.get<IPerfil>(this.url_api).subscribe((data) => {
-      console.log('Dados', data);
-      this.dado = data;
-    });
+  obterPerfil(): void {
+    this.perfilService
+      .obterPerfil()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((dados) => {
+        console.log('Perfil: ', dados);
+        this.perfil = dados;
+      });
   }
 
-  ngOnDestroy() {
-    if (this.incricoes) {
-      this.incricoes.unsubscribe();
-    }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
